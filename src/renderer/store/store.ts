@@ -23,6 +23,7 @@ interface AppState {
 
   init: () => Promise<void>
   refreshSessions: () => Promise<void>
+  createSession: (cwd: string, prompt: string, model?: string) => Promise<void>
   select: (id: string) => Promise<void>
   applySummary: (s: SessionSummary) => void
   applyEvents: (sessionId: string, events: SessionEvent[], initial?: boolean) => void
@@ -111,6 +112,11 @@ export const useStore = create<AppState>((set, get) => ({
     } catch {
       /* ignore transient failures */
     }
+  },
+
+  async createSession(cwd, prompt, model) {
+    const id = await window.api.createSession({ cwd, prompt, model })
+    await get().select(id)
   },
 
   async select(id) {

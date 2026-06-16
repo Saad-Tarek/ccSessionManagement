@@ -25,6 +25,8 @@ export const IpcChannel = {
   setFlag: 'sessions:setFlag',
   search: 'sessions:search',
   getInsights: 'app:getInsights',
+  createSession: 'sessions:create',
+  pickDirectory: 'app:pickDirectory',
   copyText: 'clipboard:write',
   setNotifications: 'app:setNotifications',
   // push (main -> renderer)
@@ -83,6 +85,12 @@ export interface SetFlagRequest {
   value: boolean
 }
 
+export interface CreateSessionRequest {
+  cwd: string
+  prompt: string
+  model?: string
+}
+
 /** The full shape exposed on `window.api`. Implemented incrementally per phase. */
 export interface RendererApi {
   listProjects(): Promise<ProjectSummary[]>
@@ -98,6 +106,8 @@ export interface RendererApi {
   setFlag(req: SetFlagRequest): Promise<void>
   search(query: string): Promise<SearchHit[]>
   getInsights(): Promise<InsightsResult>
+  createSession(req: CreateSessionRequest): Promise<string>
+  pickDirectory(): Promise<string | null>
   copyText(text: string): Promise<void>
   setNotifications(enabled: boolean): Promise<void>
   /** Subscribe to the per-session event stream. Returns an unsubscribe fn. */

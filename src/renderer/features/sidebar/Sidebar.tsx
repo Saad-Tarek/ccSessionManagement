@@ -6,6 +6,7 @@ import { useStore } from '@/store/store'
 import { SessionTile } from './SessionTile'
 import { HelpButton } from '../help/HelpButton'
 import { InsightsButton } from '../insights/InsightsButton'
+import { NewSessionButton } from '../new-session/NewSessionButton'
 import type { SessionSummary, StatusBadge } from '@shared/session'
 
 const STATUS_FILTERS: Array<{ key: StatusBadge | 'all'; label: string }> = [
@@ -83,11 +84,14 @@ export function Sidebar(): JSX.Element {
           cc
         </div>
         <span className="text-sm font-semibold">Sessions</span>
-        {needsYou > 0 && (
-          <span className="ml-auto rounded-full bg-status-waiting/15 px-2 py-0.5 text-[11px] font-semibold text-status-waiting">
-            {needsYou} need you
-          </span>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {needsYou > 0 && (
+            <span className="rounded-full bg-status-waiting/15 px-2 py-0.5 text-[11px] font-semibold text-status-waiting">
+              {needsYou} need you
+            </span>
+          )}
+          <NewSessionButton />
+        </div>
       </div>
 
       <div className="no-drag px-3 pb-2">

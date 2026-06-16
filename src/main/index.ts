@@ -1,17 +1,19 @@
 import { join } from 'path'
-import { app, shell, BrowserWindow, powerMonitor, clipboard, ipcMain, globalShortcut } from 'electron'
-import { IpcChannel } from '@shared/ipc-contract'
+import { app, shell, BrowserWindow, powerMonitor, clipboard, ipcMain, globalShortcut, dialog } from 'electron'
+import { IpcChannel, type CreateSessionRequest } from '@shared/ipc-contract'
 import { MockAdapter } from './adapters/mock/MockAdapter'
 import { TranscriptAdapter } from './adapters/transcript/TranscriptAdapter'
 import type { SessionAdapter } from './adapters/SessionAdapter'
+import { CompositeAdapter } from './adapters/CompositeAdapter'
 import { SessionService } from './services/SessionService'
 import { FlagStore } from './persistence/flagStore'
 import { NotificationManager } from './notifications'
 import { createTray, type TrayController } from './tray'
 
 // Real transcripts by default; CC_ADAPTER=mock forces the deterministic mock.
-const adapter: SessionAdapter =
+const base: SessionAdapter =
   process.env['CC_ADAPTER'] === 'mock' ? new MockAdapter() : new TranscriptAdapter()
+const adapter = new CompositeAdapter(base)
 
 let service: SessionService | null = null
 let tray: TrayController | null = null
@@ -101,6 +103,16 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(IpcChannel.copyText, (_e, text: string) => clipboard.writeText(text))
   ipcMain.handle(IpcChannel.setNotifications, (_e, enabled: boolean) => notifications.setEnabled(enabled))
+  ipcMain.handle(IpcChannel.createSession, (_e, req: CreateSessionRequest) =>
+    adapter.createOwned(req.cwd, req.prompt, req.model)
+  )
+  ipcMain.handle(IpcChannel.pickDirectory, async () => {
+    const w = getWindow()
+    const result = w
+      ? await dialog.showOpenDialog(w, { properties: ['openDirectory'] })
+      : await dialog.showOpenDialog({ properties: ['openDirectory'] })
+    return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0]
+  })
 
   // Global hotkey to summon / hide the window from anywhere.
   globalShortcut.register('CommandOrControl+Shift+C', toggleWindow)
