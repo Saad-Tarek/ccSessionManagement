@@ -1,0 +1,111 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    overflow: hidden; /* the app owns its own scroll regions */
+  }
+
+  /* Calm, unobtrusive scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full;
+    background-color: hsl(var(--muted-foreground) / 0.25);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.4);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Frameless-window drag regions */
+  .drag {
+    -webkit-app-region: drag;
+  }
+  .no-drag {
+    -webkit-app-region: no-drag;
+  }
+}
+
+/* Markdown rendering for agent messages (see components/Markdown.tsx) */
+@layer components {
+  .md {
+    @apply text-[15px] leading-relaxed text-foreground/95;
+  }
+  .md > :first-child {
+    margin-top: 0;
+  }
+  .md > :last-child {
+    margin-bottom: 0;
+  }
+  .md p {
+    @apply my-2;
+  }
+  .md ul {
+    @apply my-2 list-disc pl-5;
+  }
+  .md ol {
+    @apply my-2 list-decimal pl-5;
+  }
+  .md li {
+    @apply my-1;
+  }
+  .md h1 {
+    @apply mb-2 mt-4 text-lg font-semibold;
+  }
+  .md h2 {
+    @apply mb-2 mt-4 text-base font-semibold;
+  }
+  .md h3 {
+    @apply mb-1.5 mt-3 text-sm font-semibold;
+  }
+  .md a {
+    @apply text-primary underline underline-offset-2;
+  }
+  .md strong {
+    @apply font-semibold text-foreground;
+  }
+  .md blockquote {
+    @apply my-2 border-l-2 border-border pl-3 text-muted-foreground;
+  }
+  .md :not(pre) > code {
+    @apply rounded bg-surface-raised px-1 py-0.5 font-mono text-[0.85em];
+  }
+  .md pre {
+    @apply my-3 overflow-x-auto rounded-lg border border-border bg-background p-3 text-[13px];
+  }
+  .md pre code {
+    @apply bg-transparent p-0;
+  }
+  .md table {
+    @apply my-3 block w-full overflow-x-auto border-collapse text-sm;
+  }
+  .md th,
+  .md td {
+    @apply border border-border px-2 py-1 text-left;
+  }
+  .md hr {
+    @apply my-4 border-border;
+  }
+}

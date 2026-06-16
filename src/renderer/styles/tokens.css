@@ -1,0 +1,160 @@
+/*
+ * Design tokens, one palette per theme. Switching themes = setting
+ * document.documentElement.dataset.theme (see lib/themes.ts). Values are HSL
+ * channels (no hsl() wrapper) so Tailwind can compose alpha.
+ */
+
+:root,
+[data-theme='dark'] {
+  --background: 222 18% 8%;
+  --foreground: 210 22% 92%;
+  --surface: 222 16% 11%;
+  --surface-raised: 222 15% 14%;
+  --muted: 222 12% 17%;
+  --muted-foreground: 215 14% 62%;
+  --primary: 250 78% 68%;
+  --primary-foreground: 250 40% 12%;
+  --accent: 250 66% 64%;
+  --accent-foreground: 0 0% 100%;
+  --border: 222 14% 19%;
+  --input: 222 14% 22%;
+  --ring: 250 78% 68%;
+  --status-running: 210 90% 62%;
+  --status-waiting: 38 92% 58%;
+  --status-blocked: 270 72% 70%;
+  --status-error: 0 76% 64%;
+  --status-done: 150 46% 56%;
+  --radius: 0.6rem;
+}
+
+[data-theme='light'] {
+  --background: 220 20% 98%;
+  --foreground: 222 24% 12%;
+  --surface: 0 0% 100%;
+  --surface-raised: 220 20% 99%;
+  --muted: 220 16% 94%;
+  --muted-foreground: 220 10% 42%;
+  --primary: 250 72% 56%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 250 70% 60%;
+  --accent-foreground: 0 0% 100%;
+  --border: 220 16% 88%;
+  --input: 220 16% 86%;
+  --ring: 250 72% 56%;
+  --status-running: 212 90% 50%;
+  --status-waiting: 38 92% 42%;
+  --status-blocked: 270 70% 58%;
+  --status-error: 0 74% 52%;
+  --status-done: 150 48% 38%;
+  --radius: 0.6rem;
+}
+
+[data-theme='matrix'] {
+  --background: 135 35% 4%;
+  --foreground: 135 90% 62%;
+  --surface: 135 30% 6%;
+  --surface-raised: 135 26% 9%;
+  --muted: 135 24% 12%;
+  --muted-foreground: 135 45% 45%;
+  --primary: 135 95% 52%;
+  --primary-foreground: 135 60% 5%;
+  --accent: 135 90% 56%;
+  --accent-foreground: 135 60% 5%;
+  --border: 135 35% 14%;
+  --input: 135 35% 16%;
+  --ring: 135 95% 52%;
+  --status-running: 135 90% 55%;
+  --status-waiting: 90 90% 55%;
+  --status-blocked: 165 85% 50%;
+  --status-error: 0 90% 62%;
+  --status-done: 135 55% 40%;
+  --radius: 0.3rem;
+}
+
+[data-theme='midnight'] {
+  --background: 222 47% 8%;
+  --foreground: 213 31% 91%;
+  --surface: 222 44% 11%;
+  --surface-raised: 222 40% 15%;
+  --muted: 222 32% 19%;
+  --muted-foreground: 215 20% 62%;
+  --primary: 199 89% 58%;
+  --primary-foreground: 222 47% 8%;
+  --accent: 190 90% 55%;
+  --accent-foreground: 222 47% 8%;
+  --border: 222 32% 21%;
+  --input: 222 32% 24%;
+  --ring: 199 89% 58%;
+  --status-running: 199 89% 60%;
+  --status-waiting: 43 96% 58%;
+  --status-blocked: 258 90% 72%;
+  --status-error: 0 84% 64%;
+  --status-done: 160 84% 45%;
+  --radius: 0.6rem;
+}
+
+[data-theme='dracula'] {
+  --background: 231 15% 18%;
+  --foreground: 60 30% 96%;
+  --surface: 232 14% 22%;
+  --surface-raised: 232 14% 26%;
+  --muted: 232 14% 31%;
+  --muted-foreground: 226 27% 72%;
+  --primary: 265 89% 78%;
+  --primary-foreground: 231 15% 15%;
+  --accent: 326 100% 74%;
+  --accent-foreground: 231 15% 15%;
+  --border: 232 14% 31%;
+  --input: 232 14% 34%;
+  --ring: 265 89% 78%;
+  --status-running: 191 97% 77%;
+  --status-waiting: 65 92% 76%;
+  --status-blocked: 265 89% 78%;
+  --status-error: 0 100% 67%;
+  --status-done: 135 94% 65%;
+  --radius: 0.55rem;
+}
+
+[data-theme='nord'] {
+  --background: 220 16% 22%;
+  --foreground: 218 27% 88%;
+  --surface: 220 17% 26%;
+  --surface-raised: 220 16% 30%;
+  --muted: 220 16% 36%;
+  --muted-foreground: 219 28% 76%;
+  --primary: 179 25% 65%;
+  --primary-foreground: 220 16% 18%;
+  --accent: 213 32% 60%;
+  --accent-foreground: 220 16% 18%;
+  --border: 220 16% 36%;
+  --input: 220 16% 40%;
+  --ring: 179 25% 65%;
+  --status-running: 213 32% 62%;
+  --status-waiting: 40 71% 70%;
+  --status-blocked: 311 20% 63%;
+  --status-error: 354 42% 58%;
+  --status-done: 92 28% 62%;
+  --radius: 0.5rem;
+}
+
+[data-theme='rosepine'] {
+  --background: 249 22% 12%;
+  --foreground: 245 50% 91%;
+  --surface: 247 23% 15%;
+  --surface-raised: 248 24% 18%;
+  --muted: 249 16% 26%;
+  --muted-foreground: 245 25% 70%;
+  --primary: 2 55% 83%;
+  --primary-foreground: 249 22% 12%;
+  --accent: 189 43% 73%;
+  --accent-foreground: 249 22% 12%;
+  --border: 248 24% 22%;
+  --input: 248 24% 25%;
+  --ring: 2 55% 83%;
+  --status-running: 189 43% 73%;
+  --status-waiting: 35 88% 72%;
+  --status-blocked: 267 57% 78%;
+  --status-error: 343 76% 68%;
+  --status-done: 197 49% 60%;
+  --radius: 0.55rem;
+}
