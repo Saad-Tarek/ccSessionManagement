@@ -50,7 +50,7 @@ Electron MAIN (Node)                          Electron RENDERER (React)
 **1. Adapter layer (`src/main/adapters/`)** — the seam to every data source, all implementing one `SessionAdapter` interface:
 - `mock/` — rich deterministic seed; the only adapter used in Phase 1.
 - `transcript/` — read-only observer. `fs.watch('~/.claude/projects')`; each `<sessionId>.jsonl` is one session. `parse.ts` reads raw lines, `normalize.ts` converts them to `SessionEvent[]`. **(Phase 2)**
-- `owned/` — sessions spawned via the Agent SDK; full interactivity. **(Phase 3)**
+- `owned/` — **implemented (Phase 3).** Sessions spawned via `@anthropic-ai/claude-agent-sdk`; full interactivity (reply + Approve/Deny via `canUseTool`, multi-turn via streaming input). The SDK is **ESM-only** and the main process is **CJS**, so it MUST be loaded with a dynamic `import()` (see `OwnedAdapter.loadSdk`) — a static import compiles to `require()` and throws `ERR_REQUIRE_ESM` at runtime. `CompositeAdapter` routes observed + owned sessions by id prefix (`owned-`); electron-builder `asarUnpack`s the SDK so its binary is executable when packaged.
 
 The renderer **never sees raw transcript JSONL**. Adapters emit a normalized, append-only `SessionEvent` stream; the UI only folds events.
 
