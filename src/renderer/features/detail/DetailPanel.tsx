@@ -30,8 +30,7 @@ export function DetailPanel(): JSX.Element {
 
   return (
     <aside className="flex h-full min-h-0 flex-col border-l border-border bg-surface">
-      <div className="drag h-9 shrink-0" />
-      <div className="no-drag flex gap-1 border-b border-border px-3 pb-2">
+      <div className="flex gap-1 border-b border-border px-3 pb-2 pt-3">
         {(['details', 'files', 'activity', 'stats'] as Tab[]).map((t) => (
           <button
             key={t}

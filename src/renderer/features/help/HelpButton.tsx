@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CircleHelp, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useStore } from '@/store/store'
 import { THEMES, currentTheme, applyTheme } from '@/lib/themes'
 
 const SHORTCUTS: Array<{ keys: string; label: string }> = [
@@ -27,7 +28,22 @@ function readNotif(): boolean {
 }
 
 export function HelpButton(): JSX.Element {
-  const [open, setOpen] = useState(false)
+  const setOpen = useStore((s) => s.setHelpOpen)
+  return (
+    <button
+      onClick={() => setOpen(true)}
+      className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground"
+    >
+      <CircleHelp className="size-4" />
+      Help &amp; shortcuts
+    </button>
+  )
+}
+
+/** Help & shortcuts modal, rendered once at app level and toggled via store.helpOpen. */
+export function HelpDialog(): JSX.Element | null {
+  const open = useStore((s) => s.helpOpen)
+  const setOpen = useStore((s) => s.setHelpOpen)
   const [theme, setTheme] = useState(currentTheme())
   const [notif, setNotif] = useState(readNotif())
 
@@ -42,17 +58,11 @@ export function HelpButton(): JSX.Element {
     void window.api.setNotifications(value)
   }
 
+  if (!open) return null
+
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-xs text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground"
-      >
-        <CircleHelp className="size-4" />
-        Help &amp; shortcuts
-      </button>
-
-      {open && (
+      {(
         <div
           className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={() => setOpen(false)}

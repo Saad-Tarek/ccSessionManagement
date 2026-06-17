@@ -12,9 +12,9 @@ export interface ThemeMeta {
 }
 
 export const THEMES: ThemeMeta[] = [
+  { id: 'graphite', name: 'Graphite', swatch: ['#1d1c1a', '#e08562', '#8a8580'] },
   { id: 'dark', name: 'Dark', swatch: ['#11131a', '#8b7cf0', '#3aa0ff'] },
   { id: 'light', name: 'Light', swatch: ['#f6f7f9', '#6d5ef0', '#1d7fe0'] },
-  { id: 'matrix', name: 'Matrix', swatch: ['#050a06', '#22ff66', '#15b34a'] },
   { id: 'midnight', name: 'Midnight', swatch: ['#0b1220', '#38bdf8', '#22d3ee'] },
   { id: 'dracula', name: 'Dracula', swatch: ['#282a36', '#bd93f9', '#ff79c6'] },
   { id: 'nord', name: 'Nord', swatch: ['#2e3440', '#88c0d0', '#ebcb8b'] },
@@ -22,7 +22,7 @@ export const THEMES: ThemeMeta[] = [
 ]
 
 const STORAGE_KEY = 'theme'
-const DEFAULT_THEME = 'dark'
+const DEFAULT_THEME = 'graphite'
 const VALID = new Set(THEMES.map((t) => t.id))
 
 export function currentTheme(): string {

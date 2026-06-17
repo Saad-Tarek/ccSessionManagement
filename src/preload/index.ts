@@ -27,6 +27,8 @@ const api: RendererApi = {
   copyText: (text) => ipcRenderer.invoke(IpcChannel.copyText, text),
   setNotifications: (enabled) => ipcRenderer.invoke(IpcChannel.setNotifications, enabled),
   installUpdate: () => ipcRenderer.invoke(IpcChannel.installUpdate),
+  appInfo: () => ipcRenderer.invoke(IpcChannel.appInfo),
+  quit: () => ipcRenderer.invoke(IpcChannel.quit),
   onEvents: (handler) => {
     const listener = (_e: unknown, batch: SessionEventBatch): void => handler(batch)
     ipcRenderer.on(IpcChannel.onEvents, listener)

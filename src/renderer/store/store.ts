@@ -21,6 +21,10 @@ interface AppState {
   activeId: string | null
   feedMode: FeedMode
   detailCollapsed: boolean
+  sidebarCollapsed: boolean
+  commandOpen: boolean
+  newSessionOpen: boolean
+  helpOpen: boolean
   filter: Filter
   toast: { id: number; message: string } | null
 
@@ -35,6 +39,10 @@ interface AppState {
   decide: (requestId: string, decision: 'approved' | 'denied') => Promise<void>
   setFeedMode: (mode: FeedMode) => void
   toggleDetail: () => void
+  toggleSidebar: () => void
+  setCommandOpen: (open: boolean) => void
+  setNewSessionOpen: (open: boolean) => void
+  setHelpOpen: (open: boolean) => void
   setQuery: (query: string) => void
   setStatusFilter: (status: StatusBadge | 'all') => void
   toggleStar: (id: string) => void
@@ -78,6 +86,10 @@ export const useStore = create<AppState>((set, get) => ({
   activeId: null,
   feedMode: readFeedMode(),
   detailCollapsed: readBool('detailCollapsed', false),
+  sidebarCollapsed: readBool('sidebarCollapsed', false),
+  commandOpen: false,
+  newSessionOpen: false,
+  helpOpen: false,
   filter: { query: '', status: 'all' },
   toast: null,
 
@@ -222,6 +234,22 @@ export const useStore = create<AppState>((set, get) => ({
       writeBool('detailCollapsed', detailCollapsed)
       return { detailCollapsed }
     })
+  },
+  toggleSidebar() {
+    set((st) => {
+      const sidebarCollapsed = !st.sidebarCollapsed
+      writeBool('sidebarCollapsed', sidebarCollapsed)
+      return { sidebarCollapsed }
+    })
+  },
+  setCommandOpen(open) {
+    set({ commandOpen: open })
+  },
+  setNewSessionOpen(open) {
+    set({ newSessionOpen: open })
+  },
+  setHelpOpen(open) {
+    set({ helpOpen: open })
   },
   setQuery(query) {
     set((st) => ({ filter: { ...st.filter, query } }))

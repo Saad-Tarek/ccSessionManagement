@@ -58,7 +58,7 @@ function createWindow(): void {
     minWidth: 960,
     minHeight: 620,
     show: false,
-    backgroundColor: '#11131a',
+    backgroundColor: '#1d1c1a',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     autoHideMenuBar: true,
     webPreferences: {
@@ -128,6 +128,11 @@ app.whenReady().then(async () => {
   ipcMain.handle(IpcChannel.copyText, (_e, text: string) => clipboard.writeText(text))
   ipcMain.handle(IpcChannel.setNotifications, (_e, enabled: boolean) => notifications.setEnabled(enabled))
   ipcMain.handle(IpcChannel.installUpdate, () => installUpdate())
+  ipcMain.handle(IpcChannel.appInfo, () => ({ name: 'ccSessions', version: app.getVersion() }))
+  ipcMain.handle(IpcChannel.quit, () => {
+    isQuitting = true
+    app.quit()
+  })
   ipcMain.handle(IpcChannel.createSession, (_e, req: CreateSessionRequest) => {
     const { cwd, prompt, model } = validateCreateSession(req)
     return adapter.createOwned(cwd, prompt, model)

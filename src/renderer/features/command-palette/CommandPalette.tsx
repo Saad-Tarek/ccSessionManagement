@@ -17,7 +17,8 @@ interface Item {
 }
 
 export function CommandPalette(): JSX.Element | null {
-  const [open, setOpen] = useState(false)
+  const open = useStore((s) => s.commandOpen)
+  const setOpen = useStore((s) => s.setCommandOpen)
   const [query, setQuery] = useState('')
   const [hits, setHits] = useState<SearchHit[]>([])
   const [sel, setSel] = useState(0)
@@ -30,14 +31,14 @@ export function CommandPalette(): JSX.Element | null {
     const onKey = (e: KeyboardEvent): void => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
-        setOpen((o) => !o)
+        setOpen(!useStore.getState().commandOpen)
       } else if (e.key === 'Escape') {
         setOpen(false)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [setOpen])
 
   useEffect(() => {
     if (open) {

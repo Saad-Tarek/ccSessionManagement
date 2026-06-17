@@ -49,26 +49,27 @@
   --radius: 0.6rem;
 }
 
-[data-theme='matrix'] {
-  --background: 135 35% 4%;
-  --foreground: 135 90% 62%;
-  --surface: 135 30% 6%;
-  --surface-raised: 135 26% 9%;
-  --muted: 135 24% 12%;
-  --muted-foreground: 135 45% 45%;
-  --primary: 135 95% 52%;
-  --primary-foreground: 135 60% 5%;
-  --accent: 135 90% 56%;
-  --accent-foreground: 135 60% 5%;
-  --border: 135 35% 14%;
-  --input: 135 35% 16%;
-  --ring: 135 95% 52%;
-  --status-running: 135 90% 55%;
-  --status-waiting: 90 90% 55%;
-  --status-blocked: 165 85% 50%;
-  --status-error: 0 90% 62%;
-  --status-done: 135 55% 40%;
-  --radius: 0.3rem;
+/* Graphite — warm neutral charcoal with a terracotta accent (the default). */
+[data-theme='graphite'] {
+  --background: 30 4% 11%;
+  --foreground: 30 8% 92%;
+  --surface: 30 4% 13%;
+  --surface-raised: 30 4% 17%;
+  --muted: 30 4% 21%;
+  --muted-foreground: 30 6% 64%;
+  --primary: 16 65% 62%;
+  --primary-foreground: 20 45% 9%;
+  --accent: 16 60% 58%;
+  --accent-foreground: 0 0% 100%;
+  --border: 30 4% 20%;
+  --input: 30 4% 23%;
+  --ring: 16 65% 62%;
+  --status-running: 210 85% 64%;
+  --status-waiting: 38 90% 60%;
+  --status-blocked: 268 60% 72%;
+  --status-error: 0 72% 64%;
+  --status-done: 150 42% 56%;
+  --radius: 0.55rem;
 }
 
 [data-theme='midnight'] {

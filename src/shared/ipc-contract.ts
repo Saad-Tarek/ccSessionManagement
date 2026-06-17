@@ -30,6 +30,8 @@ export const IpcChannel = {
   copyText: 'clipboard:write',
   setNotifications: 'app:setNotifications',
   installUpdate: 'app:installUpdate',
+  appInfo: 'app:info',
+  quit: 'app:quit',
   // push (main -> renderer)
   onEvents: 'stream:events',
   onSummary: 'stream:summary',
@@ -98,6 +100,12 @@ export interface UpdateReadyInfo {
   version: string
 }
 
+/** Static app identity for the About dialog. */
+export interface AppInfo {
+  name: string
+  version: string
+}
+
 /** The full shape exposed on `window.api`. Implemented incrementally per phase. */
 export interface RendererApi {
   listProjects(): Promise<ProjectSummary[]>
@@ -119,6 +127,10 @@ export interface RendererApi {
   setNotifications(enabled: boolean): Promise<void>
   /** Quit and install a downloaded update. */
   installUpdate(): Promise<void>
+  /** App name + version for the About dialog. */
+  appInfo(): Promise<AppInfo>
+  /** Quit the app entirely (not just hide to tray). */
+  quit(): Promise<void>
   /** Subscribe to the per-session event stream. Returns an unsubscribe fn. */
   onEvents(handler: (batch: SessionEventBatch) => void): () => void
   /** Subscribe to live sidebar summary updates. Returns an unsubscribe fn. */

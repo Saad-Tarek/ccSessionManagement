@@ -12,22 +12,22 @@ const MODELS: Array<{ id: string; name: string }> = [
 ]
 
 export function NewSessionButton(): JSX.Element {
-  const [open, setOpen] = useState(false)
+  const setOpen = useStore((s) => s.setNewSessionOpen)
   return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        title="New session"
-        className="grid size-6 place-items-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground"
-      >
-        <Plus className="size-4" />
-      </button>
-      {open && <NewSessionDialog onClose={() => setOpen(false)} />}
-    </>
+    <button
+      onClick={() => setOpen(true)}
+      title="New session"
+      className="grid size-6 place-items-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground"
+    >
+      <Plus className="size-4" />
+    </button>
   )
 }
 
-function NewSessionDialog({ onClose }: { onClose: () => void }): JSX.Element {
+/** The launch dialog, rendered once at app level and toggled via store.newSessionOpen. */
+export function NewSessionDialog(): JSX.Element | null {
+  const open = useStore((s) => s.newSessionOpen)
+  const onClose = (): void => useStore.getState().setNewSessionOpen(false)
   const createSession = useStore((s) => s.createSession)
   const [cwd, setCwd] = useState('')
   const [prompt, setPrompt] = useState('')
@@ -52,6 +52,8 @@ function NewSessionDialog({ onClose }: { onClose: () => void }): JSX.Element {
       setError(e instanceof Error ? e.message : 'Failed to launch session')
     }
   }
+
+  if (!open) return null
 
   return (
     <div

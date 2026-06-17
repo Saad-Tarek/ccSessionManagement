@@ -77,9 +77,7 @@ export function Sidebar(): JSX.Element {
 
   return (
     <aside className="flex h-full min-h-0 flex-col border-r border-border bg-surface">
-      <div className="drag h-9 shrink-0" />
-
-      <div className="no-drag flex items-center gap-2 px-4 pb-2">
+      <div className="flex items-center gap-2 px-4 pb-2 pt-3">
         <div className="grid size-6 place-items-center rounded bg-primary text-[11px] font-bold text-primary-foreground">
           cc
         </div>

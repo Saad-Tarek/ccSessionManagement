@@ -88,8 +88,8 @@ export function Conversation(): JSX.Element {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="drag flex shrink-0 items-center gap-3 border-b border-border px-5 py-3">
-        <div className="no-drag min-w-0 flex-1">
+      <header className="flex shrink-0 items-center gap-3 border-b border-border px-5 py-3">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
             <h2 className="truncate text-sm font-semibold">{session.title}</h2>
             <StatusBadge status={session.status} />

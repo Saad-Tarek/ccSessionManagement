@@ -94,10 +94,11 @@
     @apply rounded bg-surface-raised px-1 py-0.5 font-mono text-[0.85em];
   }
   .md pre {
-    @apply my-3 overflow-x-auto rounded-lg border border-border bg-background p-3 text-[13px];
+    @apply my-3 overflow-x-auto rounded-lg border border-border bg-surface-raised p-3 text-[13px];
   }
   .md pre code {
     @apply bg-transparent p-0;
+    color: hsl(var(--code-fg));
   }
   .md table {
     @apply my-3 block w-full overflow-x-auto border-collapse text-sm;
@@ -109,4 +110,90 @@
   .md hr {
     @apply my-4 border-border;
   }
+}
+
+/*
+ * Syntax highlighting (highlight.js classes) driven by theme tokens instead of a
+ * fixed stylesheet — so code stays readable in every theme. Defaults suit dark
+ * surfaces; the light theme overrides to darker hues for contrast.
+ */
+:root {
+  --code-fg: 220 14% 85%;
+  --code-comment: 220 10% 52%;
+  --code-keyword: 286 60% 74%;
+  --code-string: 95 40% 62%;
+  --code-number: 28 80% 66%;
+  --code-fn: 210 90% 72%;
+  --code-type: 35 80% 70%;
+  --code-var: 0 65% 72%;
+}
+
+[data-theme='light'] {
+  --code-fg: 222 24% 20%;
+  --code-comment: 220 9% 42%;
+  --code-keyword: 286 55% 44%;
+  --code-string: 130 42% 30%;
+  --code-number: 28 78% 38%;
+  --code-fn: 212 82% 42%;
+  --code-type: 35 70% 36%;
+  --code-var: 0 60% 44%;
+}
+
+.hljs {
+  color: hsl(var(--code-fg));
+}
+.hljs-comment,
+.hljs-quote {
+  color: hsl(var(--code-comment));
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-doctag,
+.hljs-meta .hljs-keyword {
+  color: hsl(var(--code-keyword));
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-meta .hljs-string {
+  color: hsl(var(--code-string));
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link {
+  color: hsl(var(--code-number));
+}
+.hljs-title,
+.hljs-name,
+.hljs-built_in,
+.hljs-section,
+.hljs-title.function_ {
+  color: hsl(var(--code-fn));
+}
+.hljs-type,
+.hljs-attr,
+.hljs-attribute,
+.hljs-class .hljs-title,
+.hljs-params {
+  color: hsl(var(--code-type));
+}
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: hsl(var(--code-var));
+}
+.hljs-meta,
+.hljs-comment .hljs-doctag {
+  color: hsl(var(--code-comment));
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 600;
 }
