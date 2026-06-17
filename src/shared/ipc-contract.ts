@@ -29,10 +29,12 @@ export const IpcChannel = {
   pickDirectory: 'app:pickDirectory',
   copyText: 'clipboard:write',
   setNotifications: 'app:setNotifications',
+  installUpdate: 'app:installUpdate',
   // push (main -> renderer)
   onEvents: 'stream:events',
   onSummary: 'stream:summary',
-  focusSession: 'app:focusSession'
+  focusSession: 'app:focusSession',
+  updateReady: 'app:updateReady'
 } as const
 
 export type IpcChannelName = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -91,6 +93,11 @@ export interface CreateSessionRequest {
   model?: string
 }
 
+/** Emitted once an update has been downloaded and is ready to install on restart. */
+export interface UpdateReadyInfo {
+  version: string
+}
+
 /** The full shape exposed on `window.api`. Implemented incrementally per phase. */
 export interface RendererApi {
   listProjects(): Promise<ProjectSummary[]>
@@ -110,10 +117,14 @@ export interface RendererApi {
   pickDirectory(): Promise<string | null>
   copyText(text: string): Promise<void>
   setNotifications(enabled: boolean): Promise<void>
+  /** Quit and install a downloaded update. */
+  installUpdate(): Promise<void>
   /** Subscribe to the per-session event stream. Returns an unsubscribe fn. */
   onEvents(handler: (batch: SessionEventBatch) => void): () => void
   /** Subscribe to live sidebar summary updates. Returns an unsubscribe fn. */
   onSummary(handler: (summary: SessionSummary) => void): () => void
   /** Fired when the user clicks a notification — focus that session. */
   onFocusSession(handler: (sessionId: string) => void): () => void
+  /** Fired when a downloaded update is ready to install. Returns an unsubscribe fn. */
+  onUpdateReady(handler: (info: UpdateReadyInfo) => void): () => void
 }

@@ -1,6 +1,6 @@
 {
   "name": "cc-session-management",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A calm, ChatGPT-style control center for many concurrent Claude Code sessions.",
   "author": "Saad Tarek",
   "license": "MIT",
@@ -11,6 +11,7 @@
     "start": "electron-vite preview",
     "build": "npm run typecheck && electron-vite build",
     "package": "npm run build && electron-builder",
+    "release": "npm run build && electron-builder --publish always",
     "lint": "eslint .",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
@@ -30,6 +31,13 @@
     ],
     "asarUnpack": [
       "node_modules/@anthropic-ai/claude-agent-sdk/**"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Saad-Tarek",
+        "repo": "ccSessionManagement"
+      }
     ],
     "win": {
       "target": [
@@ -63,6 +71,7 @@
     "@tanstack/react-virtual": "^3.10.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "electron-updater": "^6.8.9",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",

@@ -1,4 +1,5 @@
 import { join } from 'path'
+import { statSync } from 'fs'
 import { app, shell, BrowserWindow, powerMonitor, clipboard, ipcMain, globalShortcut, dialog } from 'electron'
 import { IpcChannel, type CreateSessionRequest } from '@shared/ipc-contract'
 import { MockAdapter } from './adapters/mock/MockAdapter'
@@ -9,6 +10,7 @@ import { SessionService } from './services/SessionService'
 import { FlagStore } from './persistence/flagStore'
 import { NotificationManager } from './notifications'
 import { createTray, type TrayController } from './tray'
+import { initUpdater, installUpdate } from './updater'
 
 // Real transcripts by default; CC_ADAPTER=mock forces the deterministic mock.
 const base: SessionAdapter =
@@ -17,10 +19,32 @@ const adapter = new CompositeAdapter(base)
 
 let service: SessionService | null = null
 let tray: TrayController | null = null
+let flags: FlagStore | null = null
 let isQuitting = false
 
 function getWindow(): BrowserWindow | undefined {
   return BrowserWindow.getAllWindows()[0]
+}
+
+// Spawning an owned session runs a process in `cwd` — never trust the renderer
+// payload. Validate at the boundary and reject before reaching the Agent SDK.
+const ALLOWED_MODELS = new Set(['claude-opus-4-8', 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001'])
+
+function validateCreateSession(req: CreateSessionRequest): { cwd: string; prompt: string; model?: string } {
+  if (!req || typeof req.cwd !== 'string' || typeof req.prompt !== 'string') {
+    throw new Error('Invalid session request')
+  }
+  const prompt = req.prompt.trim()
+  if (!prompt) throw new Error('Prompt is required')
+  if (req.model !== undefined && (typeof req.model !== 'string' || !ALLOWED_MODELS.has(req.model))) {
+    throw new Error(`Unknown model: ${String(req.model)}`)
+  }
+  try {
+    if (!statSync(req.cwd).isDirectory()) throw new Error('not a directory')
+  } catch {
+    throw new Error(`Working directory is not accessible: ${req.cwd}`)
+  }
+  return { cwd: req.cwd, prompt, model: req.model }
 }
 
 function send(channel: string, payload: unknown): void {
@@ -92,7 +116,7 @@ function toggleWindow(): void {
 }
 
 app.whenReady().then(async () => {
-  const flags = new FlagStore(app.getPath('userData'))
+  flags = new FlagStore(app.getPath('userData'))
   await flags.load()
 
   const notifications = new NotificationManager(getWindow, send, IpcChannel.focusSession)
@@ -103,9 +127,11 @@ app.whenReady().then(async () => {
 
   ipcMain.handle(IpcChannel.copyText, (_e, text: string) => clipboard.writeText(text))
   ipcMain.handle(IpcChannel.setNotifications, (_e, enabled: boolean) => notifications.setEnabled(enabled))
-  ipcMain.handle(IpcChannel.createSession, (_e, req: CreateSessionRequest) =>
-    adapter.createOwned(req.cwd, req.prompt, req.model)
-  )
+  ipcMain.handle(IpcChannel.installUpdate, () => installUpdate())
+  ipcMain.handle(IpcChannel.createSession, (_e, req: CreateSessionRequest) => {
+    const { cwd, prompt, model } = validateCreateSession(req)
+    return adapter.createOwned(cwd, prompt, model)
+  })
   ipcMain.handle(IpcChannel.pickDirectory, async () => {
     const w = getWindow()
     const result = w
@@ -116,6 +142,9 @@ app.whenReady().then(async () => {
 
   // Global hotkey to summon / hide the window from anywhere.
   globalShortcut.register('CommandOrControl+Shift+C', toggleWindow)
+
+  // Check for updates and tell the renderer once one is downloaded.
+  initUpdater((info) => send(IpcChannel.updateReady, info))
 
   createWindow()
 
@@ -144,5 +173,6 @@ app.on('window-all-closed', () => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll()
   service?.dispose()
+  flags?.close()
   tray?.destroy()
 })

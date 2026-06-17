@@ -2,7 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 import {
   IpcChannel,
   type RendererApi,
-  type SessionEventBatch
+  type SessionEventBatch,
+  type UpdateReadyInfo
 } from '@shared/ipc-contract'
 import type { SessionSummary } from '@shared/session'
 
@@ -25,6 +26,7 @@ const api: RendererApi = {
   pickDirectory: () => ipcRenderer.invoke(IpcChannel.pickDirectory),
   copyText: (text) => ipcRenderer.invoke(IpcChannel.copyText, text),
   setNotifications: (enabled) => ipcRenderer.invoke(IpcChannel.setNotifications, enabled),
+  installUpdate: () => ipcRenderer.invoke(IpcChannel.installUpdate),
   onEvents: (handler) => {
     const listener = (_e: unknown, batch: SessionEventBatch): void => handler(batch)
     ipcRenderer.on(IpcChannel.onEvents, listener)
@@ -39,6 +41,11 @@ const api: RendererApi = {
     const listener = (_e: unknown, sessionId: string): void => handler(sessionId)
     ipcRenderer.on(IpcChannel.focusSession, listener)
     return () => ipcRenderer.removeListener(IpcChannel.focusSession, listener)
+  },
+  onUpdateReady: (handler) => {
+    const listener = (_e: unknown, info: UpdateReadyInfo): void => handler(info)
+    ipcRenderer.on(IpcChannel.updateReady, listener)
+    return () => ipcRenderer.removeListener(IpcChannel.updateReady, listener)
   }
 }
 

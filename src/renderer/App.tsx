@@ -6,6 +6,7 @@ import { Conversation } from './features/conversation/Conversation'
 import { DetailPanel } from './features/detail/DetailPanel'
 import { CommandPalette } from './features/command-palette/CommandPalette'
 import { Toast } from './features/toast/Toast'
+import { UpdateBanner } from './features/update/UpdateBanner'
 import { useSelectToCopy } from './lib/useSelectToCopy'
 
 export default function App(): JSX.Element {
@@ -65,6 +66,7 @@ export default function App(): JSX.Element {
       </div>
       <CommandPalette />
       <Toast />
+      <UpdateBanner />
     </>
   )
 }
