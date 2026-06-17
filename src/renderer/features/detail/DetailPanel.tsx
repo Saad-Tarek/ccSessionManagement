@@ -17,15 +17,16 @@ export function DetailPanel(): JSX.Element {
   const session = useStore((s) => (s.activeId ? s.sessions[s.activeId] : undefined))
   const events = useStore((s) => (s.activeId ? s.events[s.activeId] : undefined)) ?? EMPTY_EVENTS
 
-  if (!session) {
-    return <aside className="border-l border-border bg-surface" />
-  }
-
+  // Hooks must run before any early return — keep them above the `!session` guard.
+  const stats = useMemo(() => computeStats(events), [events])
   const files = events.filter((e): e is Extract<SessionEvent, { kind: 'file_change' }> => e.kind === 'file_change')
   const activity = events.filter((e) =>
     e.kind === 'tool_call' || e.kind === 'command' || e.kind === 'file_change' || e.kind === 'notice'
   )
-  const stats = useMemo(() => computeStats(events), [events])
+
+  if (!session) {
+    return <aside className="border-l border-border bg-surface" />
+  }
 
   return (
     <aside className="flex h-full min-h-0 flex-col border-l border-border bg-surface">

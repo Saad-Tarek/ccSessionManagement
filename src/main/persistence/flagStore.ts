@@ -4,7 +4,7 @@
  * remains the documented upgrade path if session counts ever reach the thousands.
  */
 
-import { promises as fs } from 'fs'
+import { promises as fs, mkdirSync, writeFileSync, renameSync } from 'fs'
 import { join, dirname } from 'path'
 import type { FlagKind } from '@shared/ipc-contract'
 
@@ -45,17 +45,40 @@ export class FlagStore {
     this.scheduleSave()
   }
 
+  /**
+   * Flush any pending write synchronously. Call on app quit (`will-quit`) so a
+   * debounced edit isn't lost — the process may exit before an async write resolves.
+   */
+  close(): void {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer)
+      this.saveTimer = null
+    }
+    const tmp = `${this.path}.tmp`
+    try {
+      mkdirSync(dirname(this.path), { recursive: true })
+      writeFileSync(tmp, JSON.stringify(this.data), 'utf8')
+      renameSync(tmp, this.path)
+    } catch (err) {
+      console.error('[flags] failed to persist on close', err)
+    }
+  }
+
   private scheduleSave(): void {
     if (this.saveTimer) clearTimeout(this.saveTimer)
     this.saveTimer = setTimeout(() => void this.flush(), 400)
   }
 
   private async flush(): Promise<void> {
+    const tmp = `${this.path}.tmp`
     try {
       await fs.mkdir(dirname(this.path), { recursive: true })
-      await fs.writeFile(this.path, JSON.stringify(this.data), 'utf8')
-    } catch {
-      // best-effort persistence; flags are non-critical
+      // Write to a temp file then rename — atomic on the same volume, so a crash
+      // mid-write can never truncate the real flags.json and wipe every flag.
+      await fs.writeFile(tmp, JSON.stringify(this.data), 'utf8')
+      await fs.rename(tmp, this.path)
+    } catch (err) {
+      console.error('[flags] failed to persist', err)
     }
   }
 }

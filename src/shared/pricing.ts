@@ -10,14 +10,20 @@ interface Rate {
   output: number
 }
 
+// Approx USD per million tokens. Verify against the current Claude pricing page
+// (these were last checked 2026-06). Display-only estimates, not invoices.
 const RATES: Record<string, Rate> = {
-  opus: { input: 15, output: 75 },
+  opus: { input: 5, output: 25 },
   sonnet: { input: 3, output: 15 },
   haiku: { input: 1, output: 5 },
-  fable: { input: 3, output: 15 }
+  fable: { input: 10, output: 50 }
 }
 
-const DEFAULT_RATE: Rate = RATES.sonnet
+// Cache writes bill at ~1.25x the input rate (5-min TTL), cache reads at ~0.1x.
+const CACHE_WRITE_MULTIPLIER = 1.25
+const CACHE_READ_MULTIPLIER = 0.1
+
+const DEFAULT_RATE: Rate = { ...RATES.sonnet }
 
 function rateFor(model?: string): Rate {
   const m = (model ?? '').toLowerCase()
@@ -34,7 +40,7 @@ export function estimateCost(usage: TokenUsage, model?: string): number {
   return (
     perM(usage.input, r.input) +
     perM(usage.output, r.output) +
-    perM(usage.cacheCreate, r.input * 1.25) +
-    perM(usage.cacheRead, r.input * 0.1)
+    perM(usage.cacheCreate, r.input * CACHE_WRITE_MULTIPLIER) +
+    perM(usage.cacheRead, r.input * CACHE_READ_MULTIPLIER)
   )
 }

@@ -28,6 +28,8 @@ export interface InsightsResult {
   total: SessionStats
   today: SessionStats
   projects: ProjectInsight[]
+  /** Sessions whose transcript could not be read — totals exclude them. */
+  skipped?: number
 }
 
 const TEST_RE = /\b(test|vitest|jest|pytest|mocha|playwright|cargo test|go test)\b/i

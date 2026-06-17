@@ -90,6 +90,7 @@ function InsightsModal({ onClose }: { onClose: () => void }): JSX.Element {
 
             <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
               Tokens and cost are read from each session&apos;s loaded window; cost is a rough estimate.
+              {data.skipped ? ` ${data.skipped} session${data.skipped > 1 ? 's' : ''} could not be read and ${data.skipped > 1 ? 'are' : 'is'} excluded.` : ''}
             </p>
           </>
         )}

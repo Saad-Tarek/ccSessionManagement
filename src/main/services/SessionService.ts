@@ -111,11 +111,14 @@ export class SessionService {
       { name: string; total: SessionStats[]; today: SessionStats[]; sessions: number }
     >()
 
+    let skipped = 0
     for (const summary of this.lastSummaries) {
       const events: SessionEvent[] = []
       try {
         for await (const e of this.adapter.openSession(summary.id)) events.push(e)
-      } catch {
+      } catch (err) {
+        skipped++
+        console.error('[insights] failed to read session', summary.id, err)
         continue
       }
       const total = computeStats(events)
@@ -144,7 +147,7 @@ export class SessionService {
       }))
       .sort((a, b) => b.total.costUsd - a.total.costUsd)
 
-    return { total: mergeStats(allTotal), today: mergeStats(allToday), projects }
+    return { total: mergeStats(allTotal), today: mergeStats(allToday), projects, skipped }
   }
 
   private async listSessions(): Promise<SessionSummary[]> {

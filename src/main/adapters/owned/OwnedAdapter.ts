@@ -211,16 +211,17 @@ export class OwnedAdapter implements SessionAdapter {
       for (const b of blocks) this.appendBlock(session, b)
       if (m.message.usage && session.events.length > start) {
         const u = m.message.usage
-        session.events[start] = {
-          ...session.events[start],
+        const model = m.message.model
+        session.events = replaceAt(session.events, start, (e) => ({
+          ...e,
           usage: {
             input: u.input_tokens ?? 0,
             output: u.output_tokens ?? 0,
             cacheRead: u.cache_read_input_tokens ?? 0,
             cacheCreate: u.cache_creation_input_tokens ?? 0
           },
-          model: m.message.model
-        } as SessionEvent
+          model
+        }))
       }
       this.patch(session, { status: 'working', headline: headlineOf(session.events) })
     } else if (m.type === 'user' && m.message && Array.isArray(m.message.content)) {
@@ -283,11 +284,11 @@ export class OwnedAdapter implements SessionAdapter {
     const isError = b.is_error === true
     const ev = session.events[idx]
     if (ev.kind === 'command') {
-      session.events[idx] = { ...ev, exitCode: isError ? 1 : 0, stderr: isError ? text : undefined } as SessionEvent
+      session.events = replaceAt(session.events, idx, (e) => ({ ...e, exitCode: isError ? 1 : 0, stderr: isError ? text : undefined }))
     } else if (ev.kind === 'tool_call') {
-      session.events[idx] = { ...ev, status: isError ? 'error' : 'ok', result: text } as SessionEvent
+      session.events = replaceAt(session.events, idx, (e) => ({ ...e, status: isError ? 'error' : 'ok', result: text }))
     } else if (ev.kind === 'question') {
-      session.events[idx] = { ...ev, answer: text || undefined } as SessionEvent
+      session.events = replaceAt(session.events, idx, (e) => ({ ...e, answer: text || undefined }))
     }
     this.notify(session)
   }
@@ -311,6 +312,19 @@ export class OwnedAdapter implements SessionAdapter {
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Return a new array with the event at `idx` replaced by `update(event)`. The
+ * events are streamed live to the renderer, so we rebuild the array (new ref)
+ * rather than mutating in place — mirrors `decide`, keeps Zustand re-folding.
+ */
+function replaceAt(
+  events: SessionEvent[],
+  idx: number,
+  update: (event: SessionEvent) => SessionEvent
+): SessionEvent[] {
+  return events.map((event, i) => (i === idx ? update(event) : event))
+}
 
 function cap(value: string, max = 4000): string {
   return value.length > max ? value.slice(0, max) + '\n…(truncated)' : value
