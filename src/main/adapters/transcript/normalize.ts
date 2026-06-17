@@ -206,12 +206,27 @@ function attachResult(
 
 // ── helpers ───────────────────────────────────────────────────────────────
 
+// Wrappers Claude Code injects around local commands (`! cmd`), their captured
+// output, and hook/caveat attachments. None of these are the user talking, so
+// they're dropped from the conversation rather than shown as messages.
+const NOISE_MARKERS = [
+  '<bash-input>',
+  '<bash-stdout>',
+  '<bash-stderr>',
+  '<local-command-stdout>',
+  '<local-command-caveat>',
+  '<command-message>'
+]
+
 function cleanUserText(raw: string): string | null {
+  // A real slash command (`/foo bar`) — surface it as a clean label.
   const name = raw.match(/<command-name>([^<]*)<\/command-name>/)?.[1]?.trim()
-  const args = raw.match(/<command-args>([\s\S]*?)<\/command-args>/)?.[1]?.trim()
-  if (name) return args ? `${name} ${args}` : name
-  // Local command echo / hook output — noise.
-  if (raw.includes('<local-command-stdout>') || raw.includes('<command-message>')) return null
+  if (name) {
+    const args = raw.match(/<command-args>([\s\S]*?)<\/command-args>/)?.[1]?.trim()
+    return args ? `${name} ${args}` : name
+  }
+  // Local `! command` runs, their stdout/stderr, and hook/caveat noise.
+  if (NOISE_MARKERS.some((marker) => raw.includes(marker))) return null
   const trimmed = raw.trim()
   return trimmed.length > 0 ? trimmed : null
 }

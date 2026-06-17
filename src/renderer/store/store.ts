@@ -8,6 +8,9 @@ export interface Filter {
   status: StatusBadge | 'all'
 }
 
+/** How much of each turn the conversation feed shows. */
+export type FeedMode = 'summary' | 'full'
+
 interface AppState {
   ready: boolean
   initError: string | null
@@ -16,7 +19,7 @@ interface AppState {
   events: Record<string, SessionEvent[]>
   capabilities: Record<string, Capabilities>
   activeId: string | null
-  verbose: boolean
+  feedMode: FeedMode
   detailCollapsed: boolean
   filter: Filter
   toast: { id: number; message: string } | null
@@ -30,7 +33,7 @@ interface AppState {
   reply: (text: string) => Promise<void>
   answer: (questionId: string, choice: string) => Promise<void>
   decide: (requestId: string, decision: 'approved' | 'denied') => Promise<void>
-  toggleVerbose: () => void
+  setFeedMode: (mode: FeedMode) => void
   toggleDetail: () => void
   setQuery: (query: string) => void
   setStatusFilter: (status: StatusBadge | 'all') => void
@@ -55,6 +58,14 @@ function writeBool(key: string, value: boolean): void {
   }
 }
 
+function readFeedMode(): FeedMode {
+  try {
+    return localStorage.getItem('feedMode') === 'full' ? 'full' : 'summary'
+  } catch {
+    return 'summary'
+  }
+}
+
 let toastSeq = 0
 
 export const useStore = create<AppState>((set, get) => ({
@@ -65,7 +76,7 @@ export const useStore = create<AppState>((set, get) => ({
   events: {},
   capabilities: {},
   activeId: null,
-  verbose: false,
+  feedMode: readFeedMode(),
   detailCollapsed: readBool('detailCollapsed', false),
   filter: { query: '', status: 'all' },
   toast: null,
@@ -197,8 +208,13 @@ export const useStore = create<AppState>((set, get) => ({
     await window.api.decide({ sessionId: id, requestId, decision })
   },
 
-  toggleVerbose() {
-    set((st) => ({ verbose: !st.verbose }))
+  setFeedMode(mode) {
+    try {
+      localStorage.setItem('feedMode', mode)
+    } catch {
+      /* ignore */
+    }
+    set({ feedMode: mode })
   },
   toggleDetail() {
     set((st) => {

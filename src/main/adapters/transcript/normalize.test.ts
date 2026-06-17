@@ -96,6 +96,18 @@ describe('normalize', () => {
     expect(ev[0]).toMatchObject({ kind: 'message', role: 'user', text: '/init do the thing' })
   })
 
+  it('drops local `! command` runs and their captured output', () => {
+    const ev = normalize([
+      user('first'),
+      user('<bash-input>npm run dev</bash-input>'),
+      user('<bash-stdout>Command running in background…</bash-stdout><bash-stderr></bash-stderr>'),
+      user('<local-command-caveat>Caveat: generated while running local commands.</local-command-caveat>'),
+      assistant([{ type: 'text', text: 'done' }])
+    ])
+    expect(ev.map((e) => e.kind)).toEqual(['message', 'message'])
+    expect(ev.map((e) => (e.kind === 'message' ? e.text : ''))).toEqual(['first', 'done'])
+  })
+
   it('drops noise: attachments, snapshots, titles, meta, local-command output', () => {
     const ev = normalize([
       { type: 'attachment', attachment: { type: 'hook_success' } } as unknown as RawEntry,

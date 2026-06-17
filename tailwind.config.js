@@ -44,8 +44,18 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)'
       },
       fontFamily: {
-        sans: ['InterVariable', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace']
+        // Native-first: crisp on every OS with no web-font fetch (the app makes
+        // no network egress). Segoe UI Variable is the Windows 11 system face.
+        sans: [
+          'system-ui',
+          '"Segoe UI Variable Text"',
+          '"Segoe UI"',
+          '-apple-system',
+          'Inter',
+          'Roboto',
+          'sans-serif'
+        ],
+        mono: ['"Cascadia Code"', '"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace']
       },
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },

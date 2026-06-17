@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { GitBranch, Eye, Sparkles, Brain, PanelRight } from 'lucide-react'
+import { GitBranch, Eye, Sparkles, PanelRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useStore } from '@/store/store'
+import { useStore, type FeedMode } from '@/store/store'
 import { isVerboseOnly, type SessionEvent } from '@shared/events'
 import { READ_ONLY_CAPABILITIES } from '@shared/session'
 import { StatusBadge } from '../sidebar/StatusBadge'
@@ -12,13 +12,48 @@ import { Composer } from './Composer'
 // infinite re-render loop (getSnapshot must be cached).
 const EMPTY_EVENTS: SessionEvent[] = []
 
+/**
+ * Summary view — the calm default. Keeps your messages, the agent's final reply
+ * per turn (consecutive assistant messages collapse to the last, the "wrap-up"),
+ * and anything that needs you (questions, approvals, errors). Drops the tool,
+ * command, file-change and thinking firehose. Full view shows all of that.
+ */
+function summaryView(events: SessionEvent[]): SessionEvent[] {
+  const out: SessionEvent[] = []
+  let pendingAssistant = -1 // index in `out` of this turn's not-yet-final agent reply
+  for (const e of events) {
+    if (e.kind === 'message' && e.role === 'assistant') {
+      if (pendingAssistant >= 0) out[pendingAssistant] = e
+      else {
+        pendingAssistant = out.length
+        out.push(e)
+      }
+    } else if (e.kind === 'message' && e.role === 'user') {
+      out.push(e)
+      pendingAssistant = -1
+    } else if (
+      e.kind === 'question' ||
+      e.kind === 'permission_request' ||
+      (e.kind === 'notice' && e.level !== 'info')
+    ) {
+      out.push(e)
+      pendingAssistant = -1
+    }
+  }
+  return out
+}
+
+function visibleEvents(events: SessionEvent[], mode: FeedMode): SessionEvent[] {
+  return mode === 'summary' ? summaryView(events) : events.filter((e) => !isVerboseOnly(e))
+}
+
 export function Conversation(): JSX.Element {
   const activeId = useStore((s) => s.activeId)
   const session = useStore((s) => (s.activeId ? s.sessions[s.activeId] : undefined))
   const events = useStore((s) => (s.activeId ? s.events[s.activeId] : undefined)) ?? EMPTY_EVENTS
   const caps = useStore((s) => (s.activeId ? s.capabilities[s.activeId] : undefined)) ?? READ_ONLY_CAPABILITIES
-  const verbose = useStore((s) => s.verbose)
-  const toggleVerbose = useStore((s) => s.toggleVerbose)
+  const feedMode = useStore((s) => s.feedMode)
+  const setFeedMode = useStore((s) => s.setFeedMode)
   const detailCollapsed = useStore((s) => s.detailCollapsed)
   const toggleDetail = useStore((s) => s.toggleDetail)
 
@@ -49,8 +84,7 @@ export function Conversation(): JSX.Element {
     : 'This session is read-only.'
   const ctx = { canReply: caps.canReply, canApprove: caps.canApprove, reason }
 
-  // Virtualization lands with the transcript adapter (Phase 2) for long threads.
-  const visible = events.filter((e) => verbose || !isVerboseOnly(e))
+  const visible = visibleEvents(events, feedMode)
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -79,18 +113,24 @@ export function Conversation(): JSX.Element {
           </div>
         </div>
         <div className="no-drag flex items-center gap-1.5">
-          <button
-            onClick={toggleVerbose}
-            title={verbose ? 'Hide thinking & verbose events' : 'Show thinking & verbose events'}
-            className={cn(
-              'grid size-7 place-items-center rounded-md border transition-colors',
-              verbose
-                ? 'border-primary/40 bg-primary/15 text-foreground'
-                : 'border-border text-muted-foreground hover:bg-surface-raised'
-            )}
+          <div
+            className="flex items-center rounded-md border border-border p-0.5"
+            role="group"
+            aria-label="Conversation detail level"
           >
-            <Brain className="size-4" />
-          </button>
+            <ModeButton
+              label="Summary"
+              active={feedMode === 'summary'}
+              onClick={() => setFeedMode('summary')}
+              title="Your messages and the agent's final reply per turn"
+            />
+            <ModeButton
+              label="Full"
+              active={feedMode === 'full'}
+              onClick={() => setFeedMode('full')}
+              title="Every tool call, command and file change"
+            />
+          </div>
           <button
             onClick={toggleDetail}
             title={detailCollapsed ? 'Show details panel' : 'Hide details panel'}
@@ -116,5 +156,31 @@ export function Conversation(): JSX.Element {
 
       <Composer canReply={ctx.canReply} reason={reason} />
     </div>
+  )
+}
+
+function ModeButton({
+  label,
+  active,
+  onClick,
+  title
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+  title: string
+}): JSX.Element {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      aria-pressed={active}
+      className={cn(
+        'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+        active ? 'bg-primary/15 text-foreground' : 'text-muted-foreground hover:text-foreground'
+      )}
+    >
+      {label}
+    </button>
   )
 }
