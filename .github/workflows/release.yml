@@ -33,3 +33,10 @@ jobs:
         run: npm run release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Guarantee the release is live (not a draft) so the auto-updater can see it.
+      - name: Mark release published
+        shell: bash
+        run: gh release edit "v$(node -p "require('./package.json').version")" --draft=false --latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -36,7 +36,8 @@
       {
         "provider": "github",
         "owner": "Saad-Tarek",
-        "repo": "ccSessionManagement"
+        "repo": "ccSessionManagement",
+        "releaseType": "release"
       }
     ],
     "win": {
