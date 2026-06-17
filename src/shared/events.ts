@@ -17,6 +17,7 @@ export type SessionEventKind =
   | 'subagent'
   | 'state_transition'
   | 'notice'
+  | 'compaction'
 
 export interface TokenUsage {
   input: number
@@ -125,6 +126,18 @@ export interface NoticeEvent extends BaseEvent {
   text: string
 }
 
+/**
+ * A context-compaction boundary. Claude summarizes the conversation so far and
+ * continues; the messages above this marker are the preserved pre-compaction
+ * history (never deleted from the transcript). `summary` is the injected recap.
+ */
+export interface CompactionEvent extends BaseEvent {
+  kind: 'compaction'
+  trigger: 'manual' | 'auto' | 'unknown'
+  preTokens?: number
+  summary?: string
+}
+
 export type SessionEvent =
   | MessageEvent
   | ThinkingEvent
@@ -136,6 +149,7 @@ export type SessionEvent =
   | SubagentEvent
   | StateTransitionEvent
   | NoticeEvent
+  | CompactionEvent
 
 /** Events the user must act on — drive the Needs-you tray and pendingCount. */
 export function isPending(e: SessionEvent): e is QuestionEvent | PermissionRequestEvent {

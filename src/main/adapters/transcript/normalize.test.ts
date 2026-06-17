@@ -120,6 +120,28 @@ describe('normalize', () => {
     expect(ev).toEqual([])
   })
 
+  it('folds a compaction boundary and its continuation summary into one event', () => {
+    const ev = normalize([
+      user('hello'),
+      assistant([{ type: 'text', text: 'hi' }]),
+      {
+        type: 'system',
+        subtype: 'compact_boundary',
+        timestamp: T,
+        compactMetadata: { trigger: 'manual', preTokens: 1000 }
+      } as unknown as RawEntry,
+      user(
+        'This session is being continued from a previous conversation that ran out of context.\n\nSummary:\n1. Did things.'
+      ),
+      assistant([{ type: 'text', text: 'continuing' }])
+    ])
+    // Pre-compaction messages are preserved; the recap folds into the marker.
+    expect(ev.map((e) => e.kind)).toEqual(['message', 'message', 'compaction', 'message'])
+    const c = ev.find((e) => e.kind === 'compaction')!
+    expect(c).toMatchObject({ kind: 'compaction', trigger: 'manual' })
+    expect((c as { summary?: string }).summary).toContain('Summary:')
+  })
+
   it('assigns monotonic seq and preserves order', () => {
     const ev = normalize([
       user('first'),

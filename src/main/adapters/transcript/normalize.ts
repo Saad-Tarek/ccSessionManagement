@@ -31,6 +31,7 @@ export function normalize(entries: RawEntry[]): SessionEvent[] {
   const pendingByToolUseId = new Map<string, Pending>()
   let seq = 0
   let lastTs = 0
+  let pendingCompaction = -1 // index of a compaction event awaiting its summary
 
   const tsOf = (e: RawEntry): number => {
     const t = e.timestamp ? Date.parse(e.timestamp) : NaN
@@ -54,6 +55,19 @@ export function normalize(entries: RawEntry[]): SessionEvent[] {
 
   for (const entry of entries) {
     if (entry.isMeta) continue
+
+    // Context compaction: a first-class divider. The messages already emitted
+    // above it are the preserved pre-compaction history (never deleted on disk).
+    if (entry.type === 'system' && entry.subtype === 'compact_boundary') {
+      pendingCompaction = push({
+        kind: 'compaction',
+        ts: tsOf(entry),
+        trigger: compactionTrigger(entry.compactMetadata?.trigger),
+        preTokens: entry.compactMetadata?.preTokens
+      })
+      continue
+    }
+
     const role = entry.message?.role
     if (entry.type !== 'user' && entry.type !== 'assistant') continue
 
@@ -63,6 +77,17 @@ export function normalize(entries: RawEntry[]): SessionEvent[] {
     // ── user: plain text prompt, or an array of tool_results to attach ──────
     if (entry.type === 'user') {
       if (typeof content === 'string') {
+        // The post-compaction recap Claude injects — fold it into the boundary
+        // marker rather than showing it as a giant "user" message.
+        if (isContinuationSummary(content)) {
+          if (pendingCompaction >= 0) {
+            patch(pendingCompaction, { summary: content.trim() })
+            pendingCompaction = -1
+          } else {
+            push({ kind: 'compaction', ts, trigger: 'unknown', summary: content.trim() })
+          }
+          continue
+        }
         const text = cleanUserText(content)
         if (text) push({ kind: 'message', ts, role: 'user', text })
       } else if (Array.isArray(content)) {
@@ -217,6 +242,16 @@ const NOISE_MARKERS = [
   '<local-command-caveat>',
   '<command-message>'
 ]
+
+const CONTINUATION_MARKER = 'This session is being continued from a previous conversation'
+
+function isContinuationSummary(raw: string): boolean {
+  return raw.trimStart().startsWith(CONTINUATION_MARKER)
+}
+
+function compactionTrigger(trigger: string | undefined): 'manual' | 'auto' | 'unknown' {
+  return trigger === 'manual' || trigger === 'auto' ? trigger : 'unknown'
+}
 
 function cleanUserText(raw: string): string | null {
   // A real slash command (`/foo bar`) — surface it as a clean label.

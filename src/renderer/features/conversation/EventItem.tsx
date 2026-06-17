@@ -13,10 +13,11 @@ import {
   Loader2,
   ChevronRight,
   CornerDownRight,
-  AlertTriangle
+  AlertTriangle,
+  History
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { relativeTime, summarizeInput } from '@/lib/format'
+import { relativeTime, summarizeInput, compactNumber } from '@/lib/format'
 import { useStore } from '@/store/store'
 import { Markdown } from '@/components/Markdown'
 import type {
@@ -29,7 +30,8 @@ import type {
   MessageEvent,
   ThinkingEvent,
   NoticeEvent,
-  SubagentEvent
+  SubagentEvent,
+  CompactionEvent
 } from '@shared/events'
 
 interface Ctx {
@@ -58,6 +60,8 @@ export function EventItem({ event, ctx }: { event: SessionEvent; ctx: Ctx }): JS
       return <Notice e={event} />
     case 'subagent':
       return <Subagent e={event} />
+    case 'compaction':
+      return <Compaction e={event} />
     case 'state_transition':
       return null
     default:
@@ -341,6 +345,41 @@ function Notice({ e }: { e: NoticeEvent }): JSX.Element {
     <div className={cn('flex items-center gap-2 text-xs', tone)}>
       <AlertTriangle className="size-3.5" />
       <span>{e.text}</span>
+    </div>
+  )
+}
+
+function Compaction({ e }: { e: CompactionEvent }): JSX.Element {
+  const [open, setOpen] = useState(false)
+  const label = e.trigger === 'auto' ? 'Context compacted (auto)' : 'Context compacted'
+  return (
+    <div className="my-1">
+      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        <button
+          onClick={() => e.summary && setOpen((v) => !v)}
+          className={cn(
+            'flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 transition-colors',
+            e.summary ? 'hover:bg-surface-raised hover:text-foreground' : 'cursor-default'
+          )}
+        >
+          <History className="size-3.5" />
+          <span>{label}</span>
+          {e.summary && (
+            <ChevronRight className={cn('size-3 transition-transform', open && 'rotate-90')} />
+          )}
+        </button>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <p className="mt-1 text-center text-[10px] text-muted-foreground/60">
+        Earlier conversation is preserved above
+        {e.preTokens ? ` · ~${compactNumber(e.preTokens)} tokens compacted` : ''}
+      </p>
+      {open && e.summary && (
+        <div className="mt-2 max-h-[50vh] overflow-y-auto rounded-lg border border-border bg-surface-raised/40 p-3">
+          <Markdown>{e.summary}</Markdown>
+        </div>
+      )}
     </div>
   )
 }

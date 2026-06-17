@@ -34,6 +34,7 @@ function summaryView(events: SessionEvent[]): SessionEvent[] {
     } else if (
       e.kind === 'question' ||
       e.kind === 'permission_request' ||
+      e.kind === 'compaction' ||
       (e.kind === 'notice' && e.level !== 'info')
     ) {
       out.push(e)

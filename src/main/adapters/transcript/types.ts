@@ -57,6 +57,9 @@ export interface RawEntry {
   toolUseResult?: RawToolUseResult | string | unknown
   // ai-title entries
   aiTitle?: string
+  // system entries (e.g. subtype 'compact_boundary')
+  subtype?: string
+  compactMetadata?: { trigger?: string; preTokens?: number }
 }
 
 export const TEXT_ENTRY_TYPES = new Set(['user', 'assistant'])

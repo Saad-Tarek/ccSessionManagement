@@ -37,8 +37,6 @@ export function Topbar(): JSX.Element {
         <Search className="size-4" />
       </ToolbarButton>
 
-      <span className="ml-1 text-xs font-medium text-muted-foreground">ccSessions</span>
-
       <div className="flex-1" />
 
       {!window.api.isMac && <WindowControls />}
