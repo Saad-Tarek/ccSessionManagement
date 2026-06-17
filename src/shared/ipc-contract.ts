@@ -17,6 +17,7 @@ export const IpcChannel = {
   openSession: 'sessions:open',
   closeSession: 'sessions:close',
   loadOlder: 'sessions:loadOlder',
+  deleteSession: 'sessions:delete',
   capabilities: 'sessions:capabilities',
   reply: 'sessions:reply',
   answerQuestion: 'sessions:answerQuestion',
@@ -38,6 +39,7 @@ export const IpcChannel = {
   // push (main -> renderer)
   onEvents: 'stream:events',
   onSummary: 'stream:summary',
+  sessionRemoved: 'stream:sessionRemoved',
   focusSession: 'app:focusSession',
   updateReady: 'app:updateReady'
 } as const
@@ -116,6 +118,7 @@ export interface RendererApi {
   openSession(req: OpenSessionRequest): Promise<void>
   closeSession(sessionId: string): Promise<void>
   loadOlder(req: LoadOlderRequest): Promise<SessionEvent[]>
+  deleteSession(sessionId: string): Promise<void>
   capabilities(sessionId: string): Promise<Capabilities>
   reply(req: ReplyRequest): Promise<void>
   answerQuestion(req: AnswerQuestionRequest): Promise<void>
@@ -143,6 +146,8 @@ export interface RendererApi {
   onEvents(handler: (batch: SessionEventBatch) => void): () => void
   /** Subscribe to live sidebar summary updates. Returns an unsubscribe fn. */
   onSummary(handler: (summary: SessionSummary) => void): () => void
+  /** Fired when a session is deleted — drop it from the sidebar. Returns unsubscribe. */
+  onSessionRemoved(handler: (sessionId: string) => void): () => void
   /** Fired when the user clicks a notification — focus that session. */
   onFocusSession(handler: (sessionId: string) => void): () => void
   /** Fired when a downloaded update is ready to install. Returns an unsubscribe fn. */

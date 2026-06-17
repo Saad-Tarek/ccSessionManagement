@@ -8,6 +8,7 @@
  */
 
 import { watch, type FSWatcher } from 'fs'
+import { shell } from 'electron'
 import type { SessionAdapter, OpenOptions } from '../SessionAdapter'
 import type { SessionSummary, Capabilities } from '@shared/session'
 import { READ_ONLY_CAPABILITIES } from '@shared/session'
@@ -51,6 +52,14 @@ export class TranscriptAdapter implements SessionAdapter {
 
   capabilities(): Capabilities {
     return READ_ONLY_CAPABILITIES
+  }
+
+  /** Move the transcript to the OS trash (recoverable) and drop it from the index. */
+  async deleteSession(id: string): Promise<void> {
+    const found = this.index.get(id)
+    if (!found) return
+    await shell.trashItem(found.filePath)
+    this.index.delete(id)
   }
 
   subscribe(onChange: (s: SessionSummary) => void): () => void {

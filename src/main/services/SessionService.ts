@@ -61,6 +61,7 @@ export class SessionService {
     ipcMain.handle(IpcChannel.openSession, (_e, req: OpenSessionRequest) => this.openSession(req))
     ipcMain.handle(IpcChannel.closeSession, () => undefined)
     ipcMain.handle(IpcChannel.loadOlder, (_e, req: LoadOlderRequest) => this.loadOlder(req))
+    ipcMain.handle(IpcChannel.deleteSession, (_e, id: string) => this.deleteSession(id))
     ipcMain.handle(IpcChannel.reply, (_e, r: ReplyRequest) => this.adapter.reply?.(r.sessionId, r.text))
     ipcMain.handle(IpcChannel.answerQuestion, (_e, r: AnswerQuestionRequest) =>
       this.adapter.answerQuestion?.(r.sessionId, r.questionId, r.choice)
@@ -148,6 +149,16 @@ export class SessionService {
       .sort((a, b) => b.total.costUsd - a.total.costUsd)
 
     return { total: mergeStats(allTotal), today: mergeStats(allToday), projects, skipped }
+  }
+
+  /** Delete a session (transcript → OS trash, owned → aborted) and drop it everywhere. */
+  private async deleteSession(id: string): Promise<void> {
+    await this.adapter.deleteSession?.(id)
+    this.lastSummaries = this.lastSummaries.filter((s) => s.id !== id)
+    this.search.invalidate(id)
+    if (this.openSessionId === id) this.openSessionId = null
+    this.send(IpcChannel.sessionRemoved, id)
+    this.monitor?.tray.updateBadge(needsYouCount(this.lastSummaries))
   }
 
   private async listSessions(): Promise<SessionSummary[]> {

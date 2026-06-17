@@ -31,6 +31,7 @@ interface AppState {
   init: () => Promise<void>
   refreshSessions: () => Promise<void>
   createSession: (cwd: string, prompt: string, model?: string) => Promise<void>
+  deleteSession: (id: string) => Promise<void>
   select: (id: string) => Promise<void>
   applySummary: (s: SessionSummary) => void
   applyEvents: (sessionId: string, events: SessionEvent[], initial?: boolean) => void
@@ -101,6 +102,7 @@ export const useStore = create<AppState>((set, get) => ({
       window.api.onSummary((s) => get().applySummary(s))
       window.api.onEvents((batch) => get().applyEvents(batch.sessionId, batch.events, batch.initial))
       window.api.onFocusSession((id) => void get().select(id))
+      window.api.onSessionRemoved((id) => dropSession(set, get, id))
       void window.api.setNotifications(readBool('notifications', true))
 
       const [sessions, projects] = await Promise.all([
@@ -140,6 +142,15 @@ export const useStore = create<AppState>((set, get) => ({
   async createSession(cwd, prompt, model) {
     const id = await window.api.createSession({ cwd, prompt, model })
     await get().select(id)
+  },
+
+  async deleteSession(id) {
+    try {
+      await window.api.deleteSession(id)
+    } catch {
+      /* main reports removal via onSessionRemoved; ignore transient errors */
+    }
+    dropSession(set, get, id)
   },
 
   async select(id) {
@@ -292,6 +303,24 @@ function patchLocal(set: SetFn, get: GetFn, id: string, fields: Partial<SessionS
   const s = get().sessions[id]
   if (!s) return
   set((st) => ({ sessions: { ...st.sessions, [id]: { ...s, ...fields } } }))
+}
+
+/** Remove a session from all slices; if it was open, fall back to the most recent. */
+function dropSession(set: SetFn, get: GetFn, id: string): void {
+  const wasActive = get().activeId === id
+  set((st) => {
+    const sessions = { ...st.sessions }
+    const events = { ...st.events }
+    const capabilities = { ...st.capabilities }
+    delete sessions[id]
+    delete events[id]
+    delete capabilities[id]
+    return { sessions, events, capabilities, activeId: wasActive ? null : st.activeId }
+  })
+  if (wasActive) {
+    const next = Object.values(get().sessions).sort((a, b) => b.lastActivityAt - a.lastActivityAt)[0]
+    if (next) void get().select(next.id)
+  }
 }
 
 export const capabilitiesFor = (id: string | null): Capabilities => {

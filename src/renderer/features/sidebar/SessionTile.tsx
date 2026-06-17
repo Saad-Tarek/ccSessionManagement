@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react'
+import { Star, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { relativeTime } from '@/lib/format'
 import { StatusDot } from './StatusBadge'
@@ -8,12 +8,14 @@ export function SessionTile({
   session,
   active,
   onSelect,
-  onToggleStar
+  onToggleStar,
+  onDelete
 }: {
   session: SessionSummary
   active: boolean
   onSelect: () => void
   onToggleStar: () => void
+  onDelete: () => void
 }): JSX.Element {
   return (
     <div
@@ -58,24 +60,42 @@ export function SessionTile({
           {session.unread && <span className="size-1.5 rounded-full bg-primary" />}
           {relativeTime(session.lastActivityAt)}
         </span>
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onToggleStar()
-          }}
-          className={cn(
-            'opacity-0 transition-opacity group-hover:opacity-100',
-            session.starred && 'opacity-100'
-          )}
-          aria-label={session.starred ? 'Unstar' : 'Star'}
-        >
-          <Star
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              if (
+                window.confirm(
+                  `Move "${session.title}" to the Recycle Bin?\n\nYou can restore it from there if needed.`
+                )
+              ) {
+                onDelete()
+              }
+            }}
+            className="text-muted-foreground opacity-0 transition-opacity hover:text-status-error group-hover:opacity-100"
+            aria-label="Delete session"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleStar()
+            }}
             className={cn(
-              'size-3.5',
-              session.starred ? 'fill-status-waiting text-status-waiting' : 'text-muted-foreground'
+              'opacity-0 transition-opacity group-hover:opacity-100',
+              session.starred && 'opacity-100'
             )}
-          />
-        </button>
+            aria-label={session.starred ? 'Unstar' : 'Star'}
+          >
+            <Star
+              className={cn(
+                'size-3.5',
+                session.starred ? 'fill-status-waiting text-status-waiting' : 'text-muted-foreground'
+              )}
+            />
+          </button>
+        </div>
       </div>
     </div>
   )

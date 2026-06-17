@@ -14,6 +14,7 @@ const api: RendererApi = {
   openSession: (req) => ipcRenderer.invoke(IpcChannel.openSession, req),
   closeSession: (sessionId) => ipcRenderer.invoke(IpcChannel.closeSession, sessionId),
   loadOlder: (req) => ipcRenderer.invoke(IpcChannel.loadOlder, req),
+  deleteSession: (sessionId) => ipcRenderer.invoke(IpcChannel.deleteSession, sessionId),
   capabilities: (sessionId) => ipcRenderer.invoke(IpcChannel.capabilities, sessionId),
   reply: (req) => ipcRenderer.invoke(IpcChannel.reply, req),
   answerQuestion: (req) => ipcRenderer.invoke(IpcChannel.answerQuestion, req),
@@ -42,6 +43,11 @@ const api: RendererApi = {
     const listener = (_e: unknown, summary: SessionSummary): void => handler(summary)
     ipcRenderer.on(IpcChannel.onSummary, listener)
     return () => ipcRenderer.removeListener(IpcChannel.onSummary, listener)
+  },
+  onSessionRemoved: (handler) => {
+    const listener = (_e: unknown, sessionId: string): void => handler(sessionId)
+    ipcRenderer.on(IpcChannel.sessionRemoved, listener)
+    return () => ipcRenderer.removeListener(IpcChannel.sessionRemoved, listener)
   },
   onFocusSession: (handler) => {
     const listener = (_e: unknown, sessionId: string): void => handler(sessionId)

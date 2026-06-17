@@ -23,6 +23,26 @@ const STATUS_FILTERS: Array<{ key: StatusBadge | 'all'; label: string }> = [
 // sessions and the long tail of historical transcripts.
 const ACTIVE_WINDOW_MS = 24 * 60 * 60 * 1000
 
+// Sort weight: lower = higher in the list. Live work first, then anything needing
+// the user, then errors, then idle, then finished.
+function statusRank(status: SessionSummary['status']): number {
+  switch (status) {
+    case 'working':
+      return 0
+    case 'awaiting_input':
+    case 'awaiting_approval':
+      return 1
+    case 'error':
+      return 2
+    case 'idle':
+      return 3
+    case 'done':
+      return 4
+    default:
+      return 5
+  }
+}
+
 export function Sidebar(): JSX.Element {
   const projects = useStore((s) => s.projects)
   const sessions = useStore((s) => s.sessions)
@@ -30,6 +50,7 @@ export function Sidebar(): JSX.Element {
   const filter = useStore((s) => s.filter)
   const select = useStore((s) => s.select)
   const toggleStar = useStore((s) => s.toggleStar)
+  const deleteSession = useStore((s) => s.deleteSession)
   const setQuery = useStore((s) => s.setQuery)
   const setStatusFilter = useStore((s) => s.setStatusFilter)
 
@@ -50,6 +71,9 @@ export function Sidebar(): JSX.Element {
   const now = Date.now()
   const isActive = (s: SessionSummary): boolean => now - s.lastActivityAt < ACTIVE_WINDOW_MS
   const byRecency = (a: SessionSummary, b: SessionSummary): number => b.lastActivityAt - a.lastActivityAt
+  // Live/attention-worthy sessions float to the top; ties break by recency.
+  const byActivity = (a: SessionSummary, b: SessionSummary): number =>
+    statusRank(a.status) - statusRank(b.status) || byRecency(a, b)
   const searching = filter.query.trim() !== ''
 
   const filtered = all.filter(matches)
@@ -65,13 +89,14 @@ export function Sidebar(): JSX.Element {
       active={s.id === activeId}
       onSelect={() => select(s.id)}
       onToggleStar={() => toggleStar(s.id)}
+      onDelete={() => void deleteSession(s.id)}
     />
   )
 
   const groups = projects
     .map((p) => ({
       project: p,
-      items: activePool.filter((s) => s.projectId === p.id).sort(byRecency)
+      items: activePool.filter((s) => s.projectId === p.id).sort(byActivity)
     }))
     .filter((g) => g.items.length > 0)
 

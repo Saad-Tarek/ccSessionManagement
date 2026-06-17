@@ -188,6 +188,19 @@ export class OwnedAdapter implements SessionAdapter {
     }
   }
 
+  async deleteSession(id: string): Promise<void> {
+    const s = this.sessions.get(id)
+    if (!s) return
+    try {
+      await s.query?.interrupt()
+    } catch {
+      /* already stopping */
+    }
+    s.abort.abort()
+    s.input.end()
+    this.sessions.delete(id)
+  }
+
   // ── streaming ──────────────────────────────────────────────────────────────
 
   private async consume(session: OwnedSession): Promise<void> {

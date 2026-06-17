@@ -33,6 +33,10 @@ export interface SessionAdapter {
    *  resumes from sleep. Called by the main process on powerMonitor 'resume'. */
   onResume?(): void
 
+  /** Optional: remove a session. Transcript files go to the OS trash (recoverable);
+   *  owned sessions are aborted and dropped. */
+  deleteSession?(id: string): Promise<void>
+
   // Interactive — present only on adapters that own the session.
   reply?(id: string, text: string): Promise<void>
   answerQuestion?(id: string, questionId: string, choice: string): Promise<void>

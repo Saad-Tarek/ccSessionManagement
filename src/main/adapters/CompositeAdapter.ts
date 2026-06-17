@@ -55,6 +55,10 @@ export class CompositeAdapter implements SessionAdapter {
     return this.route(id).lifecycle?.(id, action) ?? Promise.resolve()
   }
 
+  deleteSession(id: string): Promise<void> {
+    return this.route(id).deleteSession?.(id) ?? Promise.resolve()
+  }
+
   onResume(): void {
     this.base.onResume?.()
   }
