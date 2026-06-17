@@ -32,6 +32,9 @@ export const IpcChannel = {
   installUpdate: 'app:installUpdate',
   appInfo: 'app:info',
   quit: 'app:quit',
+  windowMinimize: 'win:minimize',
+  windowMaximizeToggle: 'win:maximizeToggle',
+  windowClose: 'win:close',
   // push (main -> renderer)
   onEvents: 'stream:events',
   onSummary: 'stream:summary',
@@ -131,6 +134,11 @@ export interface RendererApi {
   appInfo(): Promise<AppInfo>
   /** Quit the app entirely (not just hide to tray). */
   quit(): Promise<void>
+  /** True on macOS — the renderer skips custom window controls (traffic-lights are native). */
+  readonly isMac: boolean
+  minimizeWindow(): Promise<void>
+  maximizeWindow(): Promise<void>
+  closeWindow(): Promise<void>
   /** Subscribe to the per-session event stream. Returns an unsubscribe fn. */
   onEvents(handler: (batch: SessionEventBatch) => void): () => void
   /** Subscribe to live sidebar summary updates. Returns an unsubscribe fn. */

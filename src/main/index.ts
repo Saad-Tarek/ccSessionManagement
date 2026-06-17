@@ -59,6 +59,9 @@ function createWindow(): void {
     minHeight: 620,
     show: false,
     backgroundColor: '#1d1c1a',
+    // Frameless on Windows/Linux (the app draws its own title bar); on macOS keep
+    // the native traffic-lights via hiddenInset so window controls still work.
+    frame: process.platform === 'darwin' ? undefined : false,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     autoHideMenuBar: true,
     webPreferences: {
@@ -133,6 +136,14 @@ app.whenReady().then(async () => {
     isQuitting = true
     app.quit()
   })
+  ipcMain.handle(IpcChannel.windowMinimize, () => getWindow()?.minimize())
+  ipcMain.handle(IpcChannel.windowMaximizeToggle, () => {
+    const w = getWindow()
+    if (!w) return
+    if (w.isMaximized()) w.unmaximize()
+    else w.maximize()
+  })
+  ipcMain.handle(IpcChannel.windowClose, () => getWindow()?.close())
   ipcMain.handle(IpcChannel.createSession, (_e, req: CreateSessionRequest) => {
     const { cwd, prompt, model } = validateCreateSession(req)
     return adapter.createOwned(cwd, prompt, model)

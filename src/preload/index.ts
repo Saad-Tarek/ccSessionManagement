@@ -29,6 +29,10 @@ const api: RendererApi = {
   installUpdate: () => ipcRenderer.invoke(IpcChannel.installUpdate),
   appInfo: () => ipcRenderer.invoke(IpcChannel.appInfo),
   quit: () => ipcRenderer.invoke(IpcChannel.quit),
+  isMac: process.platform === 'darwin',
+  minimizeWindow: () => ipcRenderer.invoke(IpcChannel.windowMinimize),
+  maximizeWindow: () => ipcRenderer.invoke(IpcChannel.windowMaximizeToggle),
+  closeWindow: () => ipcRenderer.invoke(IpcChannel.windowClose),
   onEvents: (handler) => {
     const listener = (_e: unknown, batch: SessionEventBatch): void => handler(batch)
     ipcRenderer.on(IpcChannel.onEvents, listener)

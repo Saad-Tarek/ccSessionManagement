@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import * as Menu from '@radix-ui/react-dropdown-menu'
-import { Menu as MenuIcon, PanelLeft, Search, Check, ChevronRight } from 'lucide-react'
+import { Menu as MenuIcon, PanelLeft, Search, Check, ChevronRight, Minus, Square, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useStore } from '@/store/store'
 import { THEMES, applyTheme, currentTheme } from '@/lib/themes'
@@ -21,7 +21,12 @@ export function Topbar(): JSX.Element {
   const [aboutOpen, setAboutOpen] = useState(false)
 
   return (
-    <header className="drag flex h-10 shrink-0 items-center gap-1 border-b border-border bg-surface px-2">
+    <header
+      className={cn(
+        'drag flex h-10 shrink-0 items-center gap-1 border-b border-border bg-surface pl-2 pr-0',
+        window.api.isMac && 'pl-[78px]'
+      )}
+    >
       <AppMenu onAbout={() => setAboutOpen(true)} />
 
       <ToolbarButton title="Hide / show the session list" onClick={toggleSidebar}>
@@ -32,10 +37,56 @@ export function Topbar(): JSX.Element {
         <Search className="size-4" />
       </ToolbarButton>
 
-      <span className="no-drag ml-1 text-xs font-medium text-muted-foreground">ccSessions</span>
+      <span className="ml-1 text-xs font-medium text-muted-foreground">ccSessions</span>
+
+      <div className="flex-1" />
+
+      {!window.api.isMac && <WindowControls />}
 
       {aboutOpen && <AboutDialog onClose={() => setAboutOpen(false)} />}
     </header>
+  )
+}
+
+function WindowControls(): JSX.Element {
+  return (
+    <div className="no-drag flex items-center">
+      <WindowButton title="Minimize" onClick={() => void window.api.minimizeWindow()}>
+        <Minus className="size-4" />
+      </WindowButton>
+      <WindowButton title="Maximize" onClick={() => void window.api.maximizeWindow()}>
+        <Square className="size-3" />
+      </WindowButton>
+      <WindowButton title="Close" danger onClick={() => void window.api.closeWindow()}>
+        <X className="size-4" />
+      </WindowButton>
+    </div>
+  )
+}
+
+function WindowButton({
+  title,
+  onClick,
+  danger,
+  children
+}: {
+  title: string
+  onClick: () => void
+  danger?: boolean
+  children: JSX.Element
+}): JSX.Element {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className={cn(
+        'grid h-10 w-11 place-items-center text-muted-foreground transition-colors',
+        danger ? 'hover:bg-status-error hover:text-white' : 'hover:bg-surface-raised hover:text-foreground'
+      )}
+    >
+      {children}
+    </button>
   )
 }
 
