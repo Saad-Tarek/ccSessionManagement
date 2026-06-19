@@ -7,6 +7,7 @@ import { READ_ONLY_CAPABILITIES } from '@shared/session'
 import { StatusBadge } from '../sidebar/StatusBadge'
 import { EventItem } from './EventItem'
 import { Composer } from './Composer'
+import { Minimap } from './Minimap'
 
 // Stable empty reference: returning a fresh [] from a selector triggers an
 // infinite re-render loop (getSnapshot must be cached).
@@ -86,6 +87,9 @@ export function Conversation(): JSX.Element {
   const ctx = { canReply: caps.canReply, canApprove: caps.canApprove, reason }
 
   const visible = visibleEvents(events, feedMode)
+  const anchors = visible
+    .filter((e): e is Extract<SessionEvent, { kind: 'message' }> => e.kind === 'message' && e.role === 'user')
+    .map((e) => ({ id: e.id, text: e.text }))
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -147,12 +151,17 @@ export function Conversation(): JSX.Element {
         </div>
       </header>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto flex max-w-3xl flex-col gap-5 px-6 py-6">
-          {visible.map((e) => (
-            <EventItem key={e.id} event={e} ctx={ctx} />
-          ))}
+      <div className="relative min-h-0 flex-1">
+        <div ref={scrollRef} className="h-full overflow-y-auto">
+          <div className="mx-auto flex max-w-3xl flex-col gap-5 px-6 py-6">
+            {visible.map((e) => (
+              <div id={`ev-${e.id}`} key={e.id}>
+                <EventItem event={e} ctx={ctx} />
+              </div>
+            ))}
+          </div>
         </div>
+        <Minimap anchors={anchors} scrollRef={scrollRef} />
       </div>
 
       <Composer canReply={ctx.canReply} reason={reason} />
