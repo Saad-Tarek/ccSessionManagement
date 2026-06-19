@@ -10,3 +10,6 @@ coverage/
 *.local
 .env
 .env.*
+
+# Impeccable design-hook cache (machine-local, churns constantly)
+.impeccable/hook.cache.json
